@@ -1,0 +1,283 @@
+<% include head %>
+    <% include header %>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-3 col-md-2 sidebar-filter">
+                    <% include sidebar-settings %>
+                </div>
+
+                <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+                    <h1 class="page-header">Platform Integrations</h1>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">MyMap.ai Integration</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <p>Connect your InfraNodus account with MyMap.ai to visualize and analyze your
+                                        knowledge graphs across platforms.</p>
+
+                                    <form id="mymap-settings-form" class="form-horizontal">
+                                        <div class="form-group">
+                                            <label for="mymap_api_key" class="col-sm-2 control-label">API Key</label>
+                                            <div class="col-sm-10">
+                                                <input type="password" class="form-control" id="mymap_api_key"
+                                                    name="mymap_api_key" placeholder="Your MyMap.ai API Key"
+                                                    value="<%= user.settings && user.settings.mymap_api_key ? user.settings.mymap_api_key : '' %>">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-2 col-sm-10">
+                                                <button type="submit" class="btn btn-primary">Save API Key</button>
+                                                <a href="https://mymap.ai/account/api-keys" target="_blank"
+                                                    class="btn btn-link">Get your API key</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Export to MyMap.ai</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <form id="mymap-export-form" class="form-horizontal">
+                                        <div class="form-group">
+                                            <label for="export_context" class="col-sm-3 control-label">Context</label>
+                                            <div class="col-sm-9">
+                                                <select class="form-control" id="export_context" name="context">
+                                                    <% if (contexts && contexts.length> 0) { %>
+                                                        <% contexts.forEach(function(context) { %>
+                                                            <option value="<%= context.name %>">
+                                                                <%= context.name %>
+                                                            </option>
+                                                            <% }); %>
+                                                                <% } else { %>
+                                                                    <option value="#private">#private</option>
+                                                                    <% } %>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-3 col-sm-9">
+                                                <button type="submit" class="btn btn-success">Export to
+                                                    MyMap.ai</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div id="export-result" class="alert" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Import from MyMap.ai</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <form id="mymap-import-form" class="form-horizontal">
+                                        <div class="form-group">
+                                            <label for="import_map_id" class="col-sm-3 control-label">Map ID</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="import_map_id" name="map_id"
+                                                    placeholder="MyMap.ai Map ID">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="import_context" class="col-sm-3 control-label">Context</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="import_context"
+                                                    name="context" placeholder="e.g., #mymap">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-3 col-sm-9">
+                                                <button type="submit" class="btn btn-info">Import from MyMap.ai</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div id="import-result" class="alert" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Your MyMap.ai Maps</h3>
+                                    <button id="refresh-maps-btn"
+                                        class="btn btn-xs btn-default pull-right">Refresh</button>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="mymap-list-container">
+                                        <p class="text-center">Click "Refresh" to load your MyMap.ai maps</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                // Save MyMap API key
+                $('#mymap-settings-form').submit(function (e) {
+                    e.preventDefault();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/integrations/settings',
+                        data: {
+                            mymap_api_key: $('#mymap_api_key').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                alert('API key saved successfully!');
+                            } else {
+                                alert('Error saving API key: ' + (response.error || 'Unknown error'));
+                            }
+                        },
+                        error: function () {
+                            alert('Error communicating with server');
+                        }
+                    });
+                });
+
+                // Export to MyMap.ai
+                $('#mymap-export-form').submit(function (e) {
+                    e.preventDefault();
+
+                    const $result = $('#export-result');
+                    $result.removeClass('alert-success alert-danger').hide();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/integrations/mymap/export',
+                        data: {
+                            context: $('#export_context').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                $result.addClass('alert-success')
+                                    .html('Export successful! <a href="' + response.mymap_url + '" target="_blank">View on MyMap.ai</a>')
+                                    .show();
+                            } else {
+                                $result.addClass('alert-danger')
+                                    .text('Export failed: ' + (response.error || 'Unknown error'))
+                                    .show();
+                            }
+                        },
+                        error: function (xhr) {
+                            let errorMsg = 'Export failed';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response && response.error) {
+                                    errorMsg += ': ' + response.error;
+                                }
+                            } catch (e) { }
+
+                            $result.addClass('alert-danger')
+                                .text(errorMsg)
+                                .show();
+                        }
+                    });
+                });
+
+                // Import from MyMap.ai
+                $('#mymap-import-form').submit(function (e) {
+                    e.preventDefault();
+
+                    const $result = $('#import-result');
+                    $result.removeClass('alert-success alert-danger').hide();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/integrations/mymap/import',
+                        data: {
+                            map_id: $('#import_map_id').val(),
+                            context: $('#import_context').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                $result.addClass('alert-success')
+                                    .html('Import successful! ' + response.imported_nodes + ' nodes and ' +
+                                        response.imported_statements + ' statements imported to context "' +
+                                        response.context + '"')
+                                    .show();
+                            } else {
+                                $result.addClass('alert-danger')
+                                    .text('Import failed: ' + (response.error || 'Unknown error'))
+                                    .show();
+                            }
+                        },
+                        error: function (xhr) {
+                            let errorMsg = 'Import failed';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response && response.error) {
+                                    errorMsg += ': ' + response.error;
+                                }
+                            } catch (e) { }
+
+                            $result.addClass('alert-danger')
+                                .text(errorMsg)
+                                .show();
+                        }
+                    });
+                });
+
+                // Load MyMap list
+                $('#refresh-maps-btn').click(function () {
+                    const $container = $('#mymap-list-container');
+                    $container.html('<p class="text-center">Loading maps...</p>');
+
+                    $.ajax({
+                        type: 'GET',
+                        url: '/integrations/mymap/list',
+                        success: function (response) {
+                            if (response.success && response.maps) {
+                                if (response.maps.length === 0) {
+                                    $container.html('<p class="text-center">No maps found in your MyMap.ai account.</p>');
+                                } else {
+                                    let html = '<div class="list-group">';
+                                    response.maps.forEach(function (map) {
+                                        html += '<div class="list-group-item">';
+                                        html += '<h4 class="list-group-item-heading">' + (map.title || 'Untitled Map') + '</h4>';
+                                        html += '<p class="list-group-item-text">ID: ' + map.id + '</p>';
+                                        if (map.description) {
+                                            html += '<p class="list-group-item-text">' + map.description + '</p>';
+                                        }
+                                        html += '<div class="btn-group" style="margin-top: 10px;">';
+                                        html += '<a href="https://mymap.ai/maps/' + map.id + '" target="_blank" class="btn btn-xs btn-default">View</a>';
+                                        html += '<button type="button" class="btn btn-xs btn-info import-map-btn" data-id="' + map.id + '">Import</button>';
+                                        html += '</div>';
+                                        html += '</div>';
+                                    });
+                                    html += '</div>';
+                                    $container.html(html);
+
+                                    // Add import button handler
+                                    $('.import-map-btn').click(function () {
+                                        const mapId = $(this).data('id');
+                                        $('#import_map_id').val(mapId);
+                                        $('html, body').animate({
+                                            scrollTop: $('#mymap-import-form').offset().top - 100
+                                        }, 500);
+                                    });
+                                }
+                            } else {
+                                $container.html('<p class="text-center text-danger">Error loading maps: ' +
+                                    (response.error || 'Unknown error')

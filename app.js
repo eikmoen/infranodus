@@ -51,11 +51,11 @@ var serveStatic = require('serve-static')
 
 var multer = require('multer')
 var storage = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, './tmp');
-     },
+    },
     filename: function (req, file, cb) {
-        cb(null , file.originalname);
+        cb(null, file.originalname);
     }
 });
 var upload = multer({ storage: storage })
@@ -70,6 +70,11 @@ var imports = require('./routes/imports')
 var importRss = require('./routes/importrss')
 var importGoogle = require('./routes/importgoogle')
 
+// Import integration routes
+var integrations = require('./routes/integrations')
+
+// Import memory protection utility
+const { memoryProtection } = require('./lib/utils/memoryProtection');
 
 var app = express()
 
@@ -77,7 +82,7 @@ var server = http.Server(app)
 var io = require('socket.io')(server)
 
 app.set('port', process.env.PORT || 3000)
-app.set('views',  __dirname + '/views')
+app.set('views', __dirname + '/views')
 app.set('view engine', 'ejs')
 
 app.use(favicon(path.join(__dirname, 'public/images', 'favicon-32x32.png')))
@@ -262,6 +267,17 @@ app.post('/import', pass.ensureAuthenticated, upload.single('uploadedFile'), imp
 app.post('/importrss', pass.ensureAuthenticated, importRss.submitRSS)
 app.post('/importgoogle', pass.ensureAuthenticated, importGoogle.submitGoogle)
 
+// Integration routes
+app.get(
+    '/integrations',
+    pass.ensureAuthenticated,
+    validate.getContextsList(),
+    integrations.renderIntegrations
+)
+app.post('/integrations/mymap/export', pass.ensureAuthenticated, integrations.exportToMyMap)
+app.post('/integrations/mymap/import', pass.ensureAuthenticated, integrations.importFromMyMap)
+app.get('/integrations/mymap/list', pass.ensureAuthenticated, integrations.getMyMapList)
+app.post('/integrations/settings', pass.ensureAuthenticated, integrations.saveIntegrationSettings)
 
 app.get('/evernote_oauth', oauths.oauth)
 app.get('/evernote_oauth_callback', oauths.oauth_callback)
@@ -303,23 +319,37 @@ if ('development' == app.get('env')) {
 }
 
 if (process.env.ERROR_ROUTE) {
-    app.get('/dev/error', function(req, res, next) {
+    app.get('/dev/error', function (req, res, next) {
         var err = new Error('database connection failed')
         err.type = 'database'
         next(err)
     })
 }
 
-server.listen(app.get('port'), function() {
-    console.log('Express server listening on port ' + app.get('port'))
-})
+// Start the app
+app.listen(app.get('port'), function () {
+    console.log('Express server listening on port ' + app.get('port'));
+
+    // Start memory protection monitoring
+    memoryProtection.startMonitoring();
+});
+
+// Handle memory alarms
+process.on('memoryAlarm', function (memoryInfo) {
+    console.error('Memory alarm triggered:', memoryInfo);
+
+    // Optional: Take additional actions like:
+    // - Clearing caches
+    // - Rejecting new connections temporarily
+    // - Restarting workers if running in cluster mode
+});
 
 // could be var chat = to make it recursive
 
-io.on('connection', function(socket) {
+io.on('connection', function (socket) {
     console.log('a user socket connected')
 
-    socket.on('disconnect', function(data) {
+    socket.on('disconnect', function (data) {
         console.log('user disconnected')
 
         // let's count how many people are left in a room
@@ -341,29 +371,29 @@ io.on('connection', function(socket) {
             people: people_remaining,
         })
     })
-    socket.on('chat message', function(msg) {
+    socket.on('chat message', function (msg) {
         console.log('message: ' + msg)
         io.sockets.in(socket.room).emit('chat message', msg)
         // io.emit('chat message', msg);
     })
-    socket.on('delete message', function(msg) {
+    socket.on('delete message', function (msg) {
         console.log('message: ' + msg)
         io.sockets.in(socket.room).emit('delete message', msg)
         // io.emit('chat message', msg);
     })
-    socket.on('node click', function(msg) {
+    socket.on('node click', function (msg) {
         socket.broadcast.to(socket.room).emit('node click', msg)
     })
-    socket.on('node delete', function(msg) {
+    socket.on('node delete', function (msg) {
         io.sockets.in(socket.room).emit('node delete', msg)
     })
-    socket.on('node add', function(msg) {
+    socket.on('node add', function (msg) {
         io.sockets.in(socket.room).emit('node add', msg)
     })
-    socket.on('graph reset', function(msg) {
+    socket.on('graph reset', function (msg) {
         io.sockets.in(socket.room).emit('graph reset', msg)
     })
-    socket.on('login', function(data) {
+    socket.on('login', function (data) {
         // Use the socket object to store data. Each client gets
         // their own unique socket object
         socket.username = data.user
