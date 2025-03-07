@@ -1,123 +1,185 @@
-# Platform Integration Guide: InfraNodus & MyMap.ai
+# Platform Integration Guide for Neural Mind Maps
 
-This guide provides a comprehensive overview of the integration between InfraNodus and MyMap.ai, two powerful graph-based knowledge visualization and analysis platforms.
+This guide provides detailed information on how to integrate the InfraNodus neural mind map system with various external platforms and services.
 
 ## Table of Contents
 
-- [Platform Capabilities](#platform-capabilities)
-- [Integration Features](#integration-features)
-- [Technical Implementation](#technical-implementation)
-- [Usage Workflows](#usage-workflows)
-- [Future Enhancements](#future-enhancements)
+1. [Overview](#overview)
+2. [File System Integration](#file-system-integration)
+3. [PhotoPrism Integration](#photoprism-integration)
+4. [MyMap.AI Integration](#mymapai-integration)
+5. [Neural Model API Integrations](#neural-model-api-integrations)
+6. [Platform-Specific Optimizations](#platform-specific-optimizations)
+7. [Memory Management](#memory-management)
+8. [Troubleshooting](#troubleshooting)
 
-## Platform Capabilities
+## Overview
 
-### InfraNodus
+The InfraNodus neural mind map system can integrate with various external platforms and services to enhance its capabilities. These integrations allow you to:
 
-InfraNodus is a text network visualization tool that excels at:
+- Create neural mind maps from files on your computer
+- Build knowledge graphs from your photo collections in PhotoPrism
+- Exchange mind maps with MyMap.AI
+- Utilize various AI models for enhanced neural processing
 
-- **Text Network Analysis**: Convert text into network graphs to reveal patterns and insights
-- **Knowledge Organization**: Structure information in contexts with node-edge relationships
-- **Collaborative Thinking**: Share and collaborate on graph-based knowledge structures
-- **Discourse Analysis**: Analyze textual data to identify main topics, gaps, and connections
-- **Memory Management**: OOM protection and efficient processing of large text networks
+## File System Integration
 
-### MyMap.ai
+### Configuration
 
-MyMap.ai offers complementary capabilities:
+To configure file system access:
 
-- **Visual Knowledge Mapping**: Intuitive interface for creating knowledge maps
-- **AI-powered Insights**: Generate connections and suggestions based on existing content
-- **Multi-format Data Integration**: Import and connect data from multiple sources
-- **Spatial Organization**: Arrange concepts in a visually meaningful way
-- **Concept Relationship Analysis**: Explore different types of relationships between concepts
+1. Navigate to the **Integrations** page in InfraNodus
+2. Select the **File System** tab
+3. Add directories you want InfraNodus to be able to access
+4. Configure scan options:
+   - **Allow Recursive Scanning**: Enable to scan subdirectories
+   - **Max Scan Depth**: Set maximum depth for subdirectory scanning
 
-## Integration Features
+### Supported File Types
 
-The integration between InfraNodus and MyMap.ai enables:
+The file system integration can extract information from various file types:
 
-### 1. Cross-Platform Graph Exchange
+- **Documents**: PDF, DOC/DOCX, TXT, MD, HTML
+- **Images**: JPG/JPEG, PNG, GIF, WEBP
+- **Audio**: MP3, WAV, FLAC, OGG, M4A
+- **Video**: MP4, MKV, MOV, AVI, WEBM
 
-- Export graphs from InfraNodus to MyMap.ai
-- Import MyMap.ai maps into InfraNodus contexts
-- Preserve node attributes and relationships during transfer
+### Technical Details
 
-### 2. Complementary Analysis
+File system integration uses the `FileSystemConnector` class which:
 
-- Use InfraNodus for in-depth text network analysis
-- Use MyMap.ai for visual refinement and spatial organization
-- Apply different analytical approaches to the same knowledge structure
+1. Validates that directories are accessible
+2. Scans for supported file types
+3. Extracts metadata (creation date, size, etc.)
+4. Performs content analysis when possible
+5. Creates a structured knowledge graph from the file information
 
-### 3. Extended Visualization Options
+## PhotoPrism Integration
 
-- Toggle between different visualization paradigms
-- Access both platforms' unique visualization capabilities
-- Enhance understanding through multiple representational models
+### Setup Requirements
 
-### 4. Workflow Optimization
+- A running [PhotoPrism](https://photoprism.app/) instance
+- API access to that instance
 
-- Choose the best tool for each stage of knowledge work
-- Start text analysis in InfraNodus, refine visually in MyMap.ai
-- Bring refined structures back to InfraNodus for further text augmentation
+### Configuration Steps
 
-## Technical Implementation
+1. Navigate to the **Integrations** page in InfraNodus
+2. Select the **PhotoPrism** tab
+3. Enter your PhotoPrism URL (e.g., `https://photos.example.com`)
+4. Enter your PhotoPrism API key (optional)
+5. Test the connection
+6. Save the configuration
 
-The integration is implemented through:
+### Features
 
-### API Communication
+Once connected, you can:
 
-- RESTful API calls between platforms
-- Authentication via API keys
-- Secure data transfer with proper error handling
+- Browse albums from your PhotoPrism instance
+- Create neural mind maps from selected albums or search results
+- Include photo labels, people, and locations in your knowledge graphs
+- Visualize photo relationships based on time, location, and content
 
-### Data Transformation
+### Technical Implementation
 
-- Automatic mapping between different graph data models
-- Preservation of key node and edge attributes
-- Context-aware import/export functionality
+The integration uses PhotoPrism's REST API to:
 
-### User Interface
+1. Authenticate with your PhotoPrism instance
+2. Retrieve album and photo information
+3. Extract metadata (labels, people, locations, etc.)
+4. Create structured knowledge graphs from the extracted information
 
-- Dedicated integration page in InfraNodus settings
-- Simple export/import interface
-- Connection management tools
+## MyMap.AI Integration
 
-## Usage Workflows
+### Overview
 
-### Text Analysis to Visual Refinement
+[MyMap.AI](https://mymap.ai) is a mind mapping platform that can exchange data with InfraNodus.
 
-1. **Start with Text**: Import or create text in InfraNodus
-2. **Network Analysis**: Use InfraNodus algorithms to discover patterns
-3. **Export to MyMap.ai**: Send the graph to MyMap.ai
-4. **Visual Refinement**: Arrange and enhance the map visually
-5. **Further Analysis**: Apply MyMap.ai's analytical features
+### Configuration
 
-### Visual Creation to Network Analysis
+1. Navigate to the **Integrations** page in InfraNodus
+2. Select the **MyMap.AI** tab
+3. Enter your MyMap.AI API key
+4. Save the configuration
 
-1. **Start with Visuals**: Create a knowledge map in MyMap.ai
-2. **Export to InfraNodus**: Send the graph to InfraNodus
-3. **Text Enhancement**: Add textual content and context
-4. **Network Analysis**: Apply InfraNodus's text network algorithms
-5. **Iterate**: Continue refining between platforms
+### Export to MyMap
 
-## Future Enhancements
+To export a context to MyMap.AI:
 
-Planned improvements to the integration include:
+1. Select a context from the dropdown
+2. Click "Export"
+3. The system will create a new map in MyMap.AI and provide you with a link
 
-- **Real-time Synchronization**: Keep graphs updated across platforms automatically
-- **Collaborative Features**: Enable multi-user collaboration across platforms
-- **Enhanced Attribute Mapping**: Support for more complex node/edge attributes
-- **Workflow Templates**: Pre-configured workflows for common use cases
-- **API Expansion**: More comprehensive API coverage for advanced integration scenarios
+### Import from MyMap
 
-## Getting Started
+To import from MyMap.AI:
 
-To use the integration features:
+1. Enter the MyMap ID you want to import
+2. Specify a context name for the imported data
+3. Click "Import"
+4. The system will create a new context with the imported data
 
-1. Navigate to "Integrations" in your InfraNodus settings
-2. Connect your MyMap.ai account by entering your API key
-3. Use the export/import tools to transfer graphs between platforms
-4. Experiment with different workflows to find what works best for your needs
+## Neural Model API Integrations
+
+### Supported AI Services
+
+InfraNodus can integrate with various AI services:
+
+- **OpenAI**: For GPT models and embeddings
+- **Cohere**: For text embeddings and language models
+- **Anthropic**: For Claude models
+- **HuggingFace**: For access to open-source models
+
+### Configuration
+
+1. Navigate to the **Integrations** page in InfraNodus
+2. Select the **API Connections** tab
+3. Enter your API keys for the services you want to use
+4. Save the configuration
+
+### Feature Enhancements
+
+These API integrations enable:
+
+- Enhanced knowledge expansion using large language models
+- Higher quality text embeddings for concept relationships
+- More accurate semantic clustering
+- Advanced cognitive insights generation
+
+## Platform-Specific Optimizations
+
+### Windows
+
+- Uses Windows-specific paths for default directories
+- Detects GPU capabilities using Windows Management Instrumentation (WMI)
+- Handles Windows-specific file path limitations
+
+### macOS
+
+- Uses macOS-specific paths for default directories
+- Detects GPU capabilities using system profiler
+- Optimized for Metal GPU acceleration when available
+
+### Linux
+
+- Uses Linux-specific paths for default directories
+- Detects GPU capabilities using lspci and other utilities
+- Supports containerized environments
+
+## Memory Management
+
+The platform integration components use memory protection mechanisms to prevent excessive resource usage:
+
+### Memory Protection Features
+
+- **Monitoring**: Continuously monitors system memory usage
+- **Thresholds**: Configurable thresholds for warning and emergency states
+- **Garbage Collection**: Triggers garbage collection when memory usage is high
+- **Component Registration**: Components can register callbacks for memory pressure events
+- **Operation Gatekeeping**: Prevents memory-intensive operations when resources are low
+
+### Configuration
+
+Memory protection settings can be adjusted in the `.env` file:
 
 ## Troubleshooting
 

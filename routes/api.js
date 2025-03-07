@@ -18,7 +18,7 @@ var express = require('express')
 const basicAuth = require('express-basic-auth');
 var User = require('../lib/user')
 
-exports.entries = function(req, res, next) {
+exports.entries = function (req, res, next) {
     basicAuth(User.authenticate)
 
     // This is for pagination, but not currently used
@@ -50,7 +50,7 @@ exports.entries = function(req, res, next) {
     var contexts = []
     contexts.push(req.params.context)
 
-    Entry.getRange(receiver, perceiver, contexts, function(err, entries) {
+    Entry.getRange(receiver, perceiver, contexts, function (err, entries) {
         if (err) return next(err)
 
         if (req.query.textonly) {
@@ -59,13 +59,13 @@ exports.entries = function(req, res, next) {
                 response += entries[key].text + '\r\n\r\n'
             }
             res.format({
-                json: function() {
+                json: function () {
                     res.send(response)
                 },
             })
         } else {
             res.format({
-                json: function() {
+                json: function () {
                     res.send(entries)
                 },
             })
@@ -73,7 +73,7 @@ exports.entries = function(req, res, next) {
     })
 }
 
-exports.entriesLDA = function(req, res, next) {
+exports.entriesLDA = function (req, res, next) {
     // This is for pagination, but not currently used
     var page = req.page
 
@@ -111,21 +111,21 @@ exports.entriesLDA = function(req, res, next) {
 
     var LDA_type = req.params.type
 
-    Entry.getLDA(receiver, perceiver, contexts, LDA_type, function(
+    Entry.getLDA(receiver, perceiver, contexts, LDA_type, function (
         err,
         entries
     ) {
         if (err) return next(err)
 
         res.format({
-            json: function() {
+            json: function () {
                 res.send(entries)
             },
         })
     })
 }
 
-exports.connectedcontexts = function(req, res, next) {
+exports.connectedcontexts = function (req, res, next) {
     //    express.basicAuth(User.authenticate);
 
     // This is for pagination, but not currently used
@@ -164,21 +164,21 @@ exports.connectedcontexts = function(req, res, next) {
 
     keywords.push(req.query)
 
-    Entry.getConnectedContexts(receiver, perceiver, keywords, function(
+    Entry.getConnectedContexts(receiver, perceiver, keywords, function (
         err,
         contexts
     ) {
         if (err) return next(err)
 
         res.format({
-            json: function() {
+            json: function () {
                 res.send(contexts)
             },
         })
     })
 }
 
-exports.connectedcontextsoutside = function(req, res, next) {
+exports.connectedcontextsoutside = function (req, res, next) {
     // This is for pagination, but not currently used
     var page = req.page
 
@@ -215,21 +215,21 @@ exports.connectedcontextsoutside = function(req, res, next) {
 
     keywords.push(req.query)
 
-    Entry.getConnectedContextsOut(receiver, perceiver, keywords, function(
+    Entry.getConnectedContextsOut(receiver, perceiver, keywords, function (
         err,
         contexts
     ) {
         if (err) return next(err)
 
         res.format({
-            json: function() {
+            json: function () {
                 res.send(contexts)
             },
         })
     })
 }
 
-exports.nodes = function(req, res, next) {
+exports.nodes = function (req, res, next) {
     var page = req.page
 
     var contexts = []
@@ -293,7 +293,7 @@ exports.nodes = function(req, res, next) {
         showcontexts,
         res,
         req,
-        function(err, graph) {
+        function (err, graph) {
             if (err) return next(err)
 
             // Change the result we obtained into a nice json we need
@@ -308,7 +308,7 @@ exports.nodes = function(req, res, next) {
                 res.render('entries/csvdata', { graph: graph })
             } else {
                 res.format({
-                    json: function() {
+                    json: function () {
                         res.send(graph)
                     },
                 })
@@ -316,3 +316,318 @@ exports.nodes = function(req, res, next) {
         }
     )
 }
+
+// Knowledge Expansion API endpoints
+exports.startExpansion = function (req, res, next) {
+    const userId = req.user.uid;
+    const contextName = req.body.context;
+    const options = {
+        depth: parseInt(req.body.depth) || 2,
+        factor: parseFloat(req.body.factor) || 1.5,
+        model: req.body.model || 'balanced',
+        focusNodes: req.body.focusNodes ? req.body.focusNodes.split(',') : []
+    };
+
+    try {
+        // Check if memory is sufficient for this operation
+        const memStatus = memoryProtection.checkMemoryUsage();
+        if (memStatus.usageRatio > 0.8) {
+            return res.status(503).json({
+                error: 'Server is currently under high memory load. Please try again later.',
+                memoryUsage: memStatus.usagePercent + '%'
+            });
+        }
+
+        // Use preemptive GC if possible
+        memoryProtection.schedulePreemptiveGC('knowledge expansion', 0.2);
+
+        const jobId = knowledgeExpansion.startExpansion(userId, contextName, options);
+
+        // Record momentum activity
+        momentumEngine.recordActivity(userId, contextName, 'expansion_start', {
+            jobId,
+            options
+        });
+
+        res.json({
+            success: true,
+            jobId: jobId,
+            status: knowledgeExpansion.getExpansionStatus(jobId)
+        });
+    }
+    catch (err) {
+        next(err);
+    }
+};
+
+exports.getExpansionStatus = function (req, res, next) {
+    const jobId = req.params.jobId;
+
+    try {
+        const status = knowledgeExpansion.getExpansionStatus(jobId);
+
+        // Check if the requester is the job owner
+        if (status.userId !== req.user.uid) {
+            return res.status(403).json({
+                error: 'You do not have permission to access this job'
+            });
+        }
+
+        res.json({
+            success: true,
+            status: status
+        });
+
+        // If job is completed, record momentum activity
+        if (status.status === 'completed' && status.generatedNodes > 0) {
+            momentumEngine.recordActivity(status.userId, status.contextName, 'expansion_complete', {
+                jobId,
+                generatedNodes: status.generatedNodes,
+                generatedConnections: status.generatedConnections
+            });
+        }
+    }
+    catch (err) {
+        if (err.message.includes('not found')) {
+            return res.status(404).json({
+                error: 'Expansion job not found',
+                jobId: jobId
+            });
+        }
+        next(err);
+    }
+};
+
+exports.cancelExpansion = function (req, res, next) {
+    const jobId = req.params.jobId;
+
+    try {
+        // First check if job exists and user has permission
+        const status = knowledgeExpansion.getExpansionStatus(jobId);
+
+        if (status.userId !== req.user.uid) {
+            return res.status(403).json({
+                error: 'You do not have permission to cancel this job'
+            });
+        }
+
+        const result = knowledgeExpansion.cancelExpansion(jobId);
+        res.json({
+            success: result,
+            message: result ? 'Expansion job cancelled' : 'Unable to cancel job',
+            jobId: jobId
+        });
+    }
+    catch (err) {
+        if (err.message.includes('not found')) {
+            return res.status(404).json({
+                error: 'Expansion job not found',
+                jobId: jobId
+            });
+        }
+        next(err);
+    }
+};
+
+// Cosmic Symphony API endpoints
+exports.analyzeSymphony = function (req, res, next) {
+    const userId = req.user.uid;
+    const contextName = req.params.context;
+
+    // First fetch the graph
+    const entry = new Entry();
+
+    entry.getGraph(userId, contextName, function (err, graph) {
+        if (err) return next(err);
+
+        try {
+            // Use preemptive GC if possible
+            memoryProtection.schedulePreemptiveGC('cosmic symphony', 0.15);
+
+            // Analyze the graph
+            const results = cosmicSymphony.analyzeCosmicSymphony(userId, contextName, graph);
+
+            // Record momentum activity
+            momentumEngine.recordActivity(userId, contextName, 'symphony_analysis', {
+                symphonyScore: results.symphonyScore.overall,
+                resonanceCount: results.resonanceCount,
+                patternCount: results.patternCount
+            });
+
+            res.json({
+                success: true,
+                results: results
+            });
+        }
+        catch (err) {
+            next(err);
+        }
+    });
+};
+
+// Veritas API endpoints
+exports.revealVeritas = function (req, res, next) {
+    const userId = req.user.uid;
+    const contextName = req.params.context;
+
+    // First fetch the graph
+    const entry = new Entry();
+
+    entry.getGraph(userId, contextName, function (err, graph) {
+        if (err) return next(err);
+
+        try {
+            // Check memory status
+            const memStatus = memoryProtection.checkMemoryUsage();
+
+            // Use preemptive GC
+            const gcPerformed = memoryProtection.schedulePreemptiveGC('celestial veritas', 0.25);
+
+            // Get the appropriate instance
+            const veritas = req.app.get('celestialVeritas') || new CelestialVeritas();
+
+            // Analyze the graph
+            const results = veritas.revealCelestialTruths(userId, contextName, graph);
+
+            // Record momentum for this high-impact activity
+            momentumEngine.recordActivity(userId, contextName, 'veritas_analysis', {
+                truthCount: results.truthCount,
+                contradictionCount: results.contradictionCount,
+                coherence: results.coherenceMetrics.overall
+            });
+
+            res.json({
+                success: true,
+                results: results,
+                memoryStatus: {
+                    usagePercent: memStatus.usagePercent,
+                    gcPerformed: gcPerformed
+                }
+            });
+        }
+        catch (err) {
+            next(err);
+        }
+    });
+};
+
+// Momentum API endpoints
+exports.recordMomentumActivity = function (req, res, next) {
+    const userId = req.user.uid;
+    const contextName = req.body.context;
+    const activityType = req.body.activityType;
+    const activityData = req.body.data || {};
+
+    try {
+        // Basic validation
+        if (!activityType) {
+            return res.status(400).json({
+                error: 'Activity type is required'
+            });
+        }
+
+        // Record the activity
+        const momentumState = momentumEngine.recordActivity(userId, contextName, activityType, activityData);
+
+        res.json({
+            success: true,
+            currentMomentum: momentumState.currentMomentum,
+            lastActivity: momentumState.lastActivity
+        });
+    }
+    catch (err) {
+        next(err);
+    }
+};
+
+exports.getMomentumStatus = function (req, res, next) {
+    const userId = req.user.uid;
+    const contextName = req.params.context;
+
+    try {
+        const momentumState = momentumEngine.getMomentum(userId, contextName);
+
+        if (!momentumState) {
+            return res.status(404).json({
+                error: 'No momentum data found',
+                context: contextName
+            });
+        }
+
+        // Get acceleration strategies
+        const strategies = momentumEngine.getAccelerationStrategies(userId, contextName);
+
+        res.json({
+            success: true,
+            momentum: momentumState.currentMomentum,
+            lastActivity: momentumState.lastActivity,
+            growthRate: momentumState.growthRate,
+            strategies: strategies
+        });
+    }
+    catch (err) {
+        next(err);
+    }
+};
+
+exports.getHotspots = function (req, res, next) {
+    const userId = req.user.uid;
+    const limit = parseInt(req.query.limit) || 5;
+
+    try {
+        const hotspots = momentumEngine.getHotSpots(userId, null, limit);
+
+        res.json({
+            success: true,
+            hotspots: hotspots
+        });
+    }
+    catch (err) {
+        next(err);
+    }
+};
+
+// Collaborative scaling endpoints
+exports.createCollaboration = function (req, res, next) {
+    const userId = req.user.uid;
+    const name = req.body.name;
+    const description = req.body.description || '';
+    const contexts = req.body.contexts ? req.body.contexts.split(',') : [];
+
+    try {
+        // Basic validation
+        if (!name) {
+            return res.status(400).json({
+                error: 'Collaboration name is required'
+            });
+        }
+
+        // Create the collaboration
+        const collaborationId = collaborativeScaling.createCollaboration(name, {
+            description,
+            contexts,
+            createdBy: userId,
+            userRoles: { [userId]: 'owner' }
+        });
+
+        // Auto-add the creator as owner
+        collaborativeScaling.addMember(collaborationId, userId, 'owner');
+
+        // Record momentum
+        momentumEngine.recordActivity(userId, null, 'collaboration_created', {
+            collaborationId,
+            name,
+            contexts
+        });
+
+        res.json({
+            success: true,
+            collaborationId: collaborationId,
+            name: name,
+            contexts: contexts
+        });
+    }
+    catch (err) {
+        next(err);
+    }
+};

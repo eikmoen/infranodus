@@ -10,7 +10,10 @@
     "start": "node --expose-gc app.js",
     "start:watch": "nodemon app.js",
     "prettier:cfg": "prettier --write",
-    "prettier": "npm run prettier:cfg '{.,{routes,lib}/**}/*.{js, json}' '!./package.json'"
+    "prettier": "npm run prettier:cfg '{.,{routes,lib}/**}/*.{js, json}' '!./package.json'",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@joegesualdo/get-youtube-subtitles-node": "^0.1.0",

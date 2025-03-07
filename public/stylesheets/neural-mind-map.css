@@ -1,0 +1,759 @@
+/**
+ * Neural Mind Map Styles - Enhanced
+ * 
+ * Advanced styling for neural mind map visualizations with multiple themes and effects.
+ */
+
+/* Main container styles */
+.neural-mind-map-page {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.neural-visualization-container {
+    height: calc(100vh - 80px);
+    position: relative;
+    overflow: hidden;
+    border-left: 1px solid #30363d;
+    background: radial-gradient(circle at 50% 50%, rgba(13, 17, 23, 0.7) 0%, rgba(13, 17, 23, 1) 100%);
+}
+
+.neural-map-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#neuralMindMapVis {
+    width: 100%;
+    height: 100%;
+}
+
+/* Neural sidebar styles */
+.neural-sidebar {
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #161b22;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.neural-control-panel {
+    margin-bottom: 20px;
+}
+
+.neural-control-panel h4 {
+    margin-bottom: 15px;
+    color: #58a6ff;
+}
+
+.neural-tabs .nav-tabs {
+    border-bottom: 1px solid #30363d;
+}
+
+.neural-tabs .nav-link {
+    color: #8b949e;
+    border: none;
+    border-bottom: 2px solid transparent;
+}
+
+.neural-tabs .nav-link.active {
+    color: #58a6ff;
+    background-color: transparent;
+    border-bottom: 2px solid #58a6ff;
+}
+
+.neural-tabs .tab-content {
+    padding: 15px 0;
+}
+
+/* Form styling */
+.neural-mind-map-page .form-control,
+.neural-mind-map-page .custom-select {
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    color: #c9d1d9;
+}
+
+.neural-mind-map-page .form-control:focus,
+.neural-mind-map-page .custom-select:focus {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+}
+
+.neural-mind-map-page .custom-switch .custom-control-label::before {
+    background-color: #0d1117;
+    border-color: #30363d;
+}
+
+.neural-mind-map-page .custom-switch .custom-control-input:checked~.custom-control-label::before {
+    background-color: #238636;
+    border-color: #238636;
+}
+
+/* Button styling */
+.neural-mind-map-page .btn-primary {
+    background-color: #238636;
+    border-color: #238636;
+}
+
+.neural-mind-map-page .btn-primary:hover {
+    background-color: #2ea043;
+    border-color: #2ea043;
+}
+
+.neural-mind-map-page .btn-outline-secondary {
+    color: #8b949e;
+    border-color: #30363d;
+}
+
+.neural-mind-map-page .btn-outline-secondary:hover {
+    background-color: #21262d;
+    border-color: #8b949e;
+    color: #c9d1d9;
+}
+
+/* Loading overlay */
+#loadingOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(13, 17, 23, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: #c9d1d9;
+}
+
+/* Entity details panel */
+.entity-details-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    background-color: rgba(22, 27, 34, 0.95);
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 15px;
+    color: #c9d1d9;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    overflow-y: auto;
+    max-height: calc(100% - 40px);
+}
+
+.entity-details-panel h4 {
+    color: #58a6ff;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.entity-details-panel .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    color: #8b949e;
+}
+
+/* Visualization elements */
+.neural-node {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1.5;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+}
+
+.neural-node.highlighted {
+    filter: url(#neural-glow);
+    stroke-width: 2.5px;
+    stroke: rgba(255, 255, 255, 0.8);
+    z-index: 10;
+}
+
+.neural-node.evolved {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+}
+
+.neural-node.dimmed {
+    opacity: 0.3;
+}
+
+.neural-link {
+    transition: opacity 0.3s ease, stroke-width 0.3s ease;
+    stroke-linecap: round;
+}
+
+.neural-link.highlighted {
+    stroke-width: 2.5px;
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+}
+
+.neural-link.similarity-high {
+    stroke-dasharray: none;
+}
+
+.neural-link.similarity-medium {
+    stroke-dasharray: 5, 3;
+}
+
+.neural-link.similarity-low {
+    stroke-dasharray: 2, 2;
+}
+
+.neural-label {
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Scan status styles */
+.scan-status {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.scan-status .progress {
+    height: 10px;
+    background-color: #21262d;
+}
+
+.scan-status .progress-bar {
+    background-color: #238636;
+}
+
+/* Photo timeline visualization */
+.photo-timeline {
+    background-color: rgba(22, 27, 34, 0.9);
+    border: 1px solid #30363d;
+    border-radius: 6px;
+}
+
+.photo-marker {
+    cursor: pointer;
+    transition: r 0.2s ease;
+}
+
+.photo-marker:hover {
+    r: 6;
+}
+
+/* Photo detail panel */
+.photo-detail-panel {
+    background-color: rgba(22, 27, 34, 0.95);
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    width: 350px;
+    max-width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.photo-detail-panel img {
+    max-width: 100%;
+    border-radius: 4px;
+}
+
+/* Insights panel */
+#insightsList .insight-card {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+#insightsList .insight-card .insight-title {
+    color: #58a6ff;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+#insightsList .insight-card .insight-confidence {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 12px;
+    background-color: #0d1117;
+    margin-bottom: 8px;
+}
+
+/* Visualization controls */
+.visualization-controls {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.visualization-controls h5 {
+    color: #58a6ff;
+    margin-bottom: 15px;
+}
+
+/* Export modal */
+#exportModal .modal-content {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    color: #c9d1d9;
+}
+
+#exportModal .modal-header {
+    border-bottom-color: #30363d;
+}
+
+#exportModal .modal-footer {
+    border-top-color: #30363d;
+}
+
+#exportModal .close {
+    color: #c9d1d9;
+    text-shadow: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+
+    .neural-sidebar,
+    .neural-visualization-container {
+        height: auto;
+    }
+
+    .neural-sidebar {
+        order: 2;
+    }
+
+    .neural-visualization-container {
+        order: 1;
+        height: 60vh;
+    }
+}
+
+/* Light mode overrides */
+body.light-mode .neural-mind-map-page {
+    background-color: #ffffff;
+    color: #24292e;
+    background: #ffffff;
+}
+
+body.light-mode .neural-sidebar {
+    background-color: #f6f8fa;
+}
+
+body.light-mode .neural-tabs .nav-link {
+    color: #586069;
+}
+
+body.light-mode .neural-tabs .nav-link.active {
+    color: #0366d6;
+    border-bottom: 2px solid #0366d6;
+}
+
+body.light-mode .neural-visualization-container {
+    border-left: 1px solid #e1e4e8;
+    background: radial-gradient(circle at 50% 50%, rgba(246, 248, 250, 0.7) 0%, rgba(246, 248, 250, 1) 100%);
+}
+
+body.light-mode .entity-details-panel {
+    background-color: rgba(246, 248, 250, 0.95);
+    border: 1px solid #e1e4e8;
+    color: #24292e;
+}
+
+body.light-mode .entity-details-panel h4 {
+    color: #0366d6;
+}
+
+body.light-mode .cluster-hull {
+    opacity: 0.1;
+}
+
+body.light-mode .neural-node {
+    stroke: rgba(0, 0, 0, 0.15);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+body.light-mode .neural-loading {
+    background-color: rgba(246, 248, 250, 0.8);
+}
+
+body.light-mode .neural-loading-circle:nth-child(1) {
+    background-color: rgba(0, 92, 197, 0.5);
+}
+
+body.light-mode .neural-loading-circle:nth-child(2) {
+    background-color: rgba(40, 167, 69, 0.5);
+}
+
+body.light-mode .neural-loading-circle:nth-child(3) {
+    background-color: rgba(215, 58, 73, 0.5);
+}
+
+/* Color Theme System - New Section */
+.theme-selector {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+    background-color: rgba(22, 27, 34, 0.7);
+    padding: 6px 10px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    border: 1px solid #30363d;
+    display: flex;
+    align-items: center;
+}
+
+.theme-option {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin: 0 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-option:hover {
+    transform: scale(1.2);
+}
+
+.theme-option.active {
+    border-color: #fff;
+    transform: scale(1.2);
+}
+
+/* Theme: Cosmic (Default) */
+.theme-option.cosmic {
+    background: linear-gradient(135deg, #58a6ff, #bc8cff);
+}
+
+/* Theme: Forest */
+.theme-option.forest {
+    background: linear-gradient(135deg, #2ea043, #7ee787);
+}
+
+/* Theme: Sunset */
+.theme-option.sunset {
+    background: linear-gradient(135deg, #ff7b72, #ffa657);
+}
+
+/* Theme: Ocean */
+.theme-option.ocean {
+    background: linear-gradient(135deg, #388bfd, #1f6feb);
+}
+
+/* Theme: Monochrome */
+.theme-option.monochrome {
+    background: linear-gradient(135deg, #8b949e, #c9d1d9);
+}
+
+/* Color palettes for neural elements */
+.neural-palette-cosmic .neural-node.cluster-1 {
+    fill: #58a6ff;
+}
+
+.neural-palette-cosmic .neural-node.cluster-2 {
+    fill: #bc8cff;
+}
+
+.neural-palette-cosmic .neural-node.cluster-3 {
+    fill: #7ee787;
+}
+
+.neural-palette-cosmic .neural-node.cluster-4 {
+    fill: #ff7b72;
+}
+
+.neural-palette-cosmic .neural-node.cluster-5 {
+    fill: #ffa657;
+}
+
+.neural-palette-cosmic .neural-node.cluster-6 {
+    fill: #d2a8ff;
+}
+
+.neural-palette-cosmic .neural-node.cluster-7 {
+    fill: #a371f7;
+}
+
+.neural-palette-cosmic .neural-node.cluster-8 {
+    fill: #79c0ff;
+}
+
+.neural-palette-forest .neural-node.cluster-1 {
+    fill: #2ea043;
+}
+
+.neural-palette-forest .neural-node.cluster-2 {
+    fill: #7ee787;
+}
+
+.neural-palette-forest .neural-node.cluster-3 {
+    fill: #56d364;
+}
+
+.neural-palette-forest .neural-node.cluster-4 {
+    fill: #3fb950;
+}
+
+.neural-palette-forest .neural-node.cluster-5 {
+    fill: #26a641;
+}
+
+.neural-palette-forest .neural-node.cluster-6 {
+    fill: #238636;
+}
+
+.neural-palette-forest .neural-node.cluster-7 {
+    fill: #1b7f2c;
+}
+
+.neural-palette-forest .neural-node.cluster-8 {
+    fill: #116620;
+}
+
+.neural-palette-sunset .neural-node.cluster-1 {
+    fill: #ff7b72;
+}
+
+.neural-palette-sunset .neural-node.cluster-2 {
+    fill: #ffa657;
+}
+
+.neural-palette-sunset .neural-node.cluster-3 {
+    fill: #f0883e;
+}
+
+.neural-palette-sunset .neural-node.cluster-4 {
+    fill: #fd7e14;
+}
+
+.neural-palette-sunset .neural-node.cluster-5 {
+    fill: #e85d04;
+}
+
+.neural-palette-sunset .neural-node.cluster-6 {
+    fill: #dc2626;
+}
+
+.neural-palette-sunset .neural-node.cluster-7 {
+    fill: #b91c1c;
+}
+
+.neural-palette-sunset .neural-node.cluster-8 {
+    fill: #7f1d1d;
+}
+
+.neural-palette-ocean .neural-node.cluster-1 {
+    fill: #388bfd;
+}
+
+.neural-palette-ocean .neural-node.cluster-2 {
+    fill: #1f6feb;
+}
+
+.neural-palette-ocean .neural-node.cluster-3 {
+    fill: #58a6ff;
+}
+
+.neural-palette-ocean .neural-node.cluster-4 {
+    fill: #79c0ff;
+}
+
+.neural-palette-ocean .neural-node.cluster-5 {
+    fill: #0d419d;
+}
+
+.neural-palette-ocean .neural-node.cluster-6 {
+    fill: #0c2d6b;
+}
+
+.neural-palette-ocean .neural-node.cluster-7 {
+    fill: #033d8b;
+}
+
+.neural-palette-ocean .neural-node.cluster-8 {
+    fill: #0366d6;
+}
+
+.neural-palette-monochrome .neural-node.cluster-1 {
+    fill: #c9d1d9;
+}
+
+.neural-palette-monochrome .neural-node.cluster-2 {
+    fill: #b1bac4;
+}
+
+.neural-palette-monochrome .neural-node.cluster-3 {
+    fill: #8b949e;
+}
+
+.neural-palette-monochrome .neural-node.cluster-4 {
+    fill: #6e7681;
+}
+
+.neural-palette-monochrome .neural-node.cluster-5 {
+    fill: #484f58;
+}
+
+.neural-palette-monochrome .neural-node.cluster-6 {
+    fill: #30363d;
+}
+
+.neural-palette-monochrome .neural-node.cluster-7 {
+    fill: #21262d;
+}
+
+.neural-palette-monochrome .neural-node.cluster-8 {
+    fill: #161b22;
+}
+
+/* Enhanced Cluster Visualization */
+.cluster-hull {
+    opacity: 0.15;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    transition: opacity 0.3s ease, stroke-width 0.3s ease;
+    pointer-events: none;
+}
+
+.cluster-hull.highlighted {
+    opacity: 0.25;
+    stroke-width: 2px;
+}
+
+.cluster-label {
+    font-size: 14px;
+    font-weight: 600;
+    fill: rgba(255, 255, 255, 0.7);
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .cluster-label {
+        font-size: 12px;
+    }
+}
+
+/* Custom SVG Filters and Effects */
+.svg-defs-container {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+/* Animation for New Nodes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.neural-node.new {
+    animation: fadeIn 0.6s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+}
+
+/* Enhanced Loading Animation */
+.neural-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(13, 17, 23, 0.8);
+    z-index: 1000;
+}
+
+.neural-loading-animation {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.neural-loading-circle {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0);
+    animation: neural-pulse 2s ease-in-out infinite;
+}
+
+.neural-loading-circle:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    left: 20px;
+    top: 20px;
+    animation-delay: 0s;
+    background-color: rgba(88, 166, 255, 0.5);
+}
+
+.neural-loading-circle:nth-child(2) {
+    width: 60px;
+    height: 60px;
+    left: 30px;
+    top: 30px;
+    animation-delay: 0.3s;
+    background-color: rgba(126, 231, 135, 0.5);
+}
+
+.neural-loading-circle:nth-child(3) {
+    width: 40px;
+    height: 40px;
+    left: 40px;
+    top: 40px;
+    animation-delay: 0.6s;
+    background-color: rgba(255, 123, 114, 0.5);
+}
+
+@keyframes neural-pulse {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1.2);
+        opacity: 0;
+    }
+}

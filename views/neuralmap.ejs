@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Mind Map | InfraNodus</title>
+
+    <!-- Core CSS -->
+    <%- include('includes/core-css') %>
+
+        <!-- Neural Mind Map specific styles -->
+        <link rel="stylesheet" href="/stylesheets/neural-mind-map.css">
+
+        <!-- PhotoPrism integration styles -->
+        <link rel="stylesheet" href="/stylesheets/photoprism-integration.css">
+
+        <!-- Map library for location visualization -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+
+<body class="neural-mind-map-page">
+    <%- include('includes/header', {active: 'neural' }) %>
+
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Left sidebar with controls -->
+                <div class="col-md-3 neural-sidebar">
+                    <div class="neural-control-panel">
+                        <h4>Neural Mind Map</h4>
+
+                        <div class="neural-tabs">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="contexts-tab" data-toggle="tab" href="#contexts"
+                                        role="tab">Contexts</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="files-tab" data-toggle="tab" href="#files"
+                                        role="tab">Files</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="photos-tab" data-toggle="tab" href="#photos"
+                                        role="tab">Photos</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="insights-tab" data-toggle="tab" href="#insights"
+                                        role="tab">Insights</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <!-- Contexts Tab -->
+                                <div class="tab-pane fade show active" id="contexts" role="tabpanel">
+                                    <div class="form-group mt-3">
+                                        <label for="contextSelect">Select Context</label>
+                                        <select class="form-control" id="contextSelect">
+                                            <option value="">-- Select a context --</option>
+                                            <% for(let i=0; i < contexts.length; i++) { %>
+                                                <option value="<%= contexts[i].name %>">
+                                                    <%= contexts[i].name %>
+                                                </option>
+                                                <% } %>
+                                        </select>
+                                    </div>
+
+                                    <div class="neural-options mt-3">
+                                        <h5>Neural Options</h5>
+
+                                        <div class="form-group">
+                                            <label for="expansionDepth">Expansion Depth</label>
+                                            <input type="range" class="custom-range" min="1" max="5" value="3"
+                                                id="expansionDepth">
+                                            <div class="d-flex justify-content-between">
+                                                <small>Shallow</small>
+                                                <small>Deep</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="neuralArchitecture">Neural Architecture</label>
+                                            <select class="form-control" id="neuralArchitecture">
+                                                <option value="transformer">Transformer</option>
+                                                <option value="recurrent">Recurrent Neural Network</option>
+                                                <option value="graph">Graph Neural Network</option>
+                                                <option value="hybrid" selected>Hybrid (Recommended)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="custom-control custom-switch mb-2">
+                                            <input type="checkbox" class="custom-control-input" id="includeMetaInsights"
+                                                checked>
+                                            <label class="custom-control-label" for="includeMetaInsights">Include
+                                                Meta-Insights</label>
+                                        </div>
+
+                                        <div class="custom-control custom-switch mb-2">
+                                            <input type="checkbox" class="custom-control-input" id="temporalModeling">
+                                            <label class="custom-control-label" for="temporalModeling">Temporal
+                                                Modeling</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="action-buttons mt-3">
+                                        <button class="btn btn-primary btn-block" id="generateMindMapBtn">Generate Mind
+                                            Map</button>
+                                        <button class="btn btn-outline-secondary btn-block" id="evolveMindMapBtn">Evolve
+                                            Mind Map</button>
+                                    </div>
+                                </div>
+
+                                <!-- Files Tab -->
+                                <div class="tab-pane fade" id="files" role="tabpanel">
+                                    <div class="mt-3">
+                                        <h5>Connect Files</h5>
+                                        <p class="small text-muted">Scan directories to create neural maps from files.
+                                        </p>
+
+                                        <div class="form-group">
+                                            <label for="directoryPath">Directory Path</label>
+                                            <input type="text" class="form-control" id="directoryPath"
+                                                placeholder="e.g., C:/Documents">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="fileContextName">Context Name</label>
+                                            <input type="text" class="form-control" id="fileContextName"
+                                                placeholder="Name for this file context">
+                                        </div>
+
+                                        <div class="file-options mt-2">
+                                            <div class="custom-control custom-switch mb-2">
+                                                <input type="checkbox" class="custom-control-input" id="recursiveScan"
+                                                    checked>
+                                                <label class="custom-control-label" for="recursiveScan">Scan
+                                                    Recursively</label>
+                                            </div>
+
+                                            <div class="custom-control custom-switch mb-2">
+                                                <input type="checkbox" class="custom-control-input" id="extractMetadata"
+                                                    checked>
+                                                <label class="custom-control-label" for="extractMetadata">Extract
+                                                    Metadata</label>
+                                            </div>
+
+                                            <div class="custom-control custom-switch mb-2">
+                                                <input type="checkbox" class="custom-control-input" id="analyzeContent">
+                                                <label class="custom-control-label" for="analyzeContent">Analyze
+                                                    Content</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="action-buttons mt-3">
+                                            <button class="btn btn-primary btn-block" id="scanDirectoryBtn">Scan
+                                                Directory</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="scan-status mt-4 d-none">
+                                        <h6>Scan Status</h6>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <p class="small text-center mt-1" id="scanStatusText">Initializing scan...</p>
+                                    </div>
+                                </div>
+
+                                <!-- Photos Tab -->
+                                <div class="tab-pane fade" id="photos" role="tabpanel">
+                                    <div class="mt-3">
+                                        <h5>PhotoPrism Integration</h5>
+
+                                        <div id="photoprismStatus">
+                                            <div class="alert alert-info">
+                                                Checking PhotoPrism connection...
+                                            </div>
+                                        </div>
+
+                                        <div id="photoprismConnected" class="d-none">
+                                            <div class="form-group">
+                                                <label for="photoContextName">Context Name</label>
+                                                <input type="text" class="form-control" id="photoContextName"
+                                                    placeholder="Name for this photo context">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="albumSelect">Select Album</label>
+                                                <select class="form-control" id="albumSelect">
+                                                    <option value="">-- All Photos --</option>
+                                                    <!-- Albums will be loaded dynamically -->
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="photoQuery">Search Query (Optional)</label>
+                                                <input type="text" class="form-control" id="photoQuery"
+                                                    placeholder="Search terms">
+                                            </div>
+
+                                            <div class="photo-options mt-2">
+                                                <div class="custom-control custom-switch mb-2">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="includeLabels" checked>
+                                                    <label class="custom-control-label" for="includeLabels">Include
+                                                        Labels</label>
+                                                </div>
+
+                                                <div class="custom-control custom-switch mb-2">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="includePeople" checked>
+                                                    <label class="custom-control-label" for="includePeople">Include
+                                                        People</label>
+                                                </div>
+
+                                                <div class="custom-control custom-switch mb-2">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="includeLocations" checked>
+                                                    <label class="custom-control-label" for="includeLocations">Include
+                                                        Locations</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="action-buttons mt-3">
+                                                <button class="btn btn-primary btn-block" id="scanPhotoprismBtn">Scan
+                                                    Photos</button>
+                                            </div>
+                                        </div>
+
+                                        <div id="photoprismDisconnected" class="d-none">
+                                            <div class="alert alert-warning">
+                                                PhotoPrism is not configured. Please check your settings.
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="photoprismUrl">PhotoPrism URL</label>
+                                                <input type="text" class="form-control" id="photoprismUrl"
+                                                    placeholder="https://your-photoprism-instance">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="photoprismApiKey">API Key</label>
+                                                <input type="password" class="form-control" id="photoprismApiKey">
+                                            </div>
+
+                                            <button class="btn btn-outline-primary btn-block"
+                                                id="connectPhotoprismBtn">Connect to PhotoPrism</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Insights Tab -->
+                                <div class="tab-pane fade" id="insights" role="tabpanel">
+                                    <div class="mt-3" id="insightsPanel">
+                                        <h5>Cognitive Insights</h5>
+                                        <p class="text-muted small">Load a mind map to see insights</p>
+
+                                        <div id="insightsList" class="d-none">
+                                            <!-- Insights will be loaded dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualization controls -->
+                    <div class="visualization-controls mt-4">
+                        <h5>Visualization</h5>
+
+                        <div class="form-group">
+                            <label for="layoutSelect">Layout</label>
+                            <select class="form-control" id="layoutSelect">
+                                <option value="neural" selected>Neural</option>
+                                <option value="radial">Radial</option>
+                                <option value="force">Force</option>
+                                <option value="hierarchical">Hierarchical</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="themeSelect">Theme</label>
+                            <select class="form-control" id="themeSelect">
+                                <option value="light">Light</option>
+                                <option value="dark" selected>Dark</option>
+                                <option value="colorful">Colorful</option>
+                            </select>
+                        </div>
+
+                        <div class="btn-group btn-group-sm d-flex mt-3" role="group">
+                            <button type="button" class="btn btn-outline-secondary" id="zoomInBtn">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="zoomOutBtn">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="zoomFitBtn">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="fullscreenBtn">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="exportBtn">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main visualization area -->
+                <div class="col-md-9 neural-visualization-container">
+                    <div class="neural-map-container">
+                        <div id="neuralMindMapVis"></div>
+
+                        <div id="loadingOverlay" class="d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            <div class="mt-2">Processing neural mind map...</div>
+                        </div>
+                    </div>
+
+                    <div class="entity-details-panel d-none" id="entityDetailsPanel">
+                        <!-- Entity details will be shown here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Modal -->
+        <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exportModalLabel">Export Neural Mind Map</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="exportFormat">Format</label>
+                            <select class="form-control" id="exportFormat">
+                                <option value="svg">SVG</option>
+                                <option value="png">PNG</option>
+                                <option value="json">JSON</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exportFilename">Filename</label>
+                            <input type="text" class="form-control" id="exportFilename" value="neural-mind-map">
+                        </div>
+
+                        <div id="pngOptions" class="d-none">
+                            <div class="form-group">
+                                <label for="pngResolution">Resolution (DPI)</label>
+                                <select class="form-control" id="pngResolution">
+                                    <option value="96">Standard (96 DPI)</option>
+                                    <option value="300" selected>High (300 DPI)</option>
+                                    <option value="600">Ultra High (600 DPI)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="downloadExportBtn">Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core Scripts -->
+        <%- include('includes/core-scripts') %>
+
+            <!-- D3.js for visualization -->
+            <script src="https://d3js.org/d3.v6.min.js"></script>
+
+            <!-- Map library for location visualization -->
+            <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+            <!-- Neural Mind Map scripts -->
+            <script src="/javascripts/visualizations/neuralMindMapVis.js"></script>
+            <script src="/javascripts/visualizations/photoprismMapVis.js"></script>
+            <script src="/javascripts/neural-mind-map-ui.js"></script>
+</body>
+
+</html>
