@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ work ]
+  pull_request:
+    branches: [ work ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Lint and Test
+        run: |
+          bash scripts/code_quality.sh
+      - name: Upload upgrade report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: upgrade-report
+          path: upgrade_report.json
+
