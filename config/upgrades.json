@@ -1,0 +1,41 @@
+{
+  "plans": [
+    {
+      "id": "basic",
+      "name": "Basic",
+      "description": "Access to essential features",
+      "price": 0,
+      "chargebee_price_id": "basic"
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "description": "Advanced analytics and export options",
+      "price": 29,
+      "chargebee_price_id": "pro-plan"
+    },
+    {
+      "id": "enterprise",
+      "name": "Enterprise",
+      "description": "All features with priority support",
+      "price": 99,
+      "chargebee_price_id": "enterprise-plan"
+    }
+  ],
+  "combos": [
+    {
+      "id": "starter-pack",
+      "name": "Starter Pack",
+      "upgrades": ["basic", "pro"],
+      "price": 39,
+      "chargebee_price_ids": ["basic", "pro-plan"]
+    },
+    {
+      "id": "ultimate-pack",
+      "name": "Ultimate Pack",
+      "upgrades": ["basic", "pro", "enterprise"],
+      "price": 119,
+      "chargebee_price_ids": ["basic", "pro-plan", "enterprise-plan"]
+    }
+  ]
+}

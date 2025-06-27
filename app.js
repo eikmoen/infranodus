@@ -23,6 +23,7 @@ const integrationsRouter = require('./routes/integrations');
 const neuralFileApiRouter = require('./routes/api/neuralFileApi');
 const cosmicRouter = require('./routes/cosmic');
 const advancedIntegrationsRouter = require('./routes/advancedIntegrations');
+const upgradesRouter = require('./routes/upgrades');
 
 const app = express();
 
@@ -102,6 +103,7 @@ app.use('/integrations', integrationsRouter);
 app.use('/api/neural-files', neuralFileApiRouter);
 app.use('/cosmic', cosmicRouter);
 app.use('/advanced-integrations', advancedIntegrationsRouter);
+app.use('/upgrades', upgradesRouter);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
