@@ -11,9 +11,12 @@
     "start:watch": "nodemon app.js",
     "prettier:cfg": "prettier --write",
     "prettier": "npm run prettier:cfg '{.,{routes,lib}/**}/*.{js, json}' '!./package.json'",
+    "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "upgrade": "bash scripts/upgrade_and_combos.sh",
+    "organize": "bash scripts/case_file_organizer.sh"
   },
   "dependencies": {
     "@joegesualdo/get-youtube-subtitles-node": "^0.1.0",
@@ -65,6 +68,8 @@
   },
   "devDependencies": {
     "nodemon": "^1.18.10",
-    "prettier": "^1.14.3"
+    "prettier": "^1.14.3",
+    "jest": "^29.5.0",
+    "eslint": "^8.56.0"
   }
 }
