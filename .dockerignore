@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+docker-compose.yml
+.git
+.gitignore
+README.md
+docs
+test
+tests
+vagrant
+Vagrantfile
+.env
+tmp
+MyMap
+.idea

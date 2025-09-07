@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: infranodus_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - neo4j
+    networks:
+      - infranodus-network
+
+  neo4j:
+    image: neo4j:4.4
+    container_name: infranodus_neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}
+    networks:
+      - infranodus-network
+
+volumes:
+  neo4j_data:
+
+networks:
+  infranodus-network:
+    driver: bridge

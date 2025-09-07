@@ -1,6 +1,28 @@
 var fs = require('fs')
 
 var configPath = './config.json'
+var config = {}
+
+// Config file exists?
+if (fs.existsSync(configPath)) {
+    config = JSON.parse(fs.readFileSync(configPath, 'UTF-8'))
+}
+
+function getConfig(path, envVar, defaultValue) {
+    if (process.env[envVar]) {
+        return process.env[envVar];
+    }
+    const keys = path.split('.');
+    let value = config;
+    for (const key of keys) {
+        if (value && typeof value === 'object' && key in value) {
+            value = value[key];
+        } else {
+            return defaultValue;
+        }
+    }
+    return value !== undefined ? value : defaultValue;
+}
 
 // General program-wide settings
 
@@ -63,44 +85,30 @@ exports.defaultstatements = {
 }
 */
 
-// Config file exists?
+const neo4jUser = getConfig('neo4j.username', 'NEO4J_USER', 'neo4j');
+const neo4jPassword = getConfig('neo4j.password', 'NEO4J_PASSWORD', 'password');
+const neo4jHost = getConfig('neo4j.host', 'NEO4J_HOST', 'localhost:7474');
+const neo4jBolt = getConfig('neo4j.bolt', 'NEO4J_BOLT_HOST', 'localhost');
 
-if (fs.existsSync(configPath)) {
-    var parsed = JSON.parse(fs.readFileSync(configPath, 'UTF-8'))
+// Create Neo4J access URL
+exports.neo4jlink = `http://${neo4jUser}:${neo4jPassword}@${neo4jHost}`
+exports.neo4jhost = `bolt://${neo4jBolt}`
+exports.neo4juser = neo4jUser
+exports.neo4jpass = neo4jPassword
 
-    // Create Neo4J access URL
-    exports.neo4jlink =
-        'http://' +
-        parsed['neo4j']['username'] +
-        ':' +
-        parsed['neo4j']['password'] +
-        '@' +
-        parsed['neo4j']['host']
+exports.invite = getConfig('secrets.invitation', 'INVITATION_SECRET', '');
+exports.cookie_secret = getConfig('secrets.cookie_secret', 'COOKIE_SECRET', 'default-secret');
 
-    exports.neo4jhost = 'bolt://' + parsed['neo4j']['bolt']
+exports.default_user = getConfig('infranodus.default_user', 'DEFAULT_USER', '');
 
-    exports.neo4juser = parsed['neo4j']['username']
-    exports.neo4jpass = parsed['neo4j']['password']
-
-    exports.invite = parsed['secrets']['invitation']
-    exports.cookie_secret = parsed['secrets']['cookie_secret']
-
-
-    exports.default_user = parsed['infranodus']['default_user']
-
-    exports.chargebee = parsed['chargebee']
-    exports.chargebee.site = parsed['chargebee']['site']
-    exports.chargebee.api_key = parsed['chargebee']['api_key']
-    exports.chargebee.redirect_url = parsed['chargebee']['redirect_url']
-
-    exports.rssPresets = parsed['rss_presets']
-} else {
-    console.log("Neo4J config file doesn't exist. Using default settings.")
-
-    exports.neo4jlink = 'http://localhost:7474'
-
-    exports.invite = ''
+exports.chargebee = {
+    site: getConfig('chargebee.site', 'CHARGEBEE_SITE', ''),
+    api_key: getConfig('chargebee.api_key', 'CHARGEBEE_API_KEY', ''),
+    redirect_url: getConfig('chargebee.redirect_url', 'CHARGEBEE_REDIRECT_URL', '')
 }
+
+const rssPresetsConfig = getConfig('rss_presets', 'RSS_PRESETS', null);
+exports.rssPresets = rssPresetsConfig ? (typeof rssPresetsConfig === 'string' ? JSON.parse(rssPresetsConfig) : rssPresetsConfig) : {};
 
 // Get a list of stopwords for English
 
@@ -455,7 +463,7 @@ exports.accentmap = [
     },
     {
         base: 'l',
-        letters: /(&#108;|&#9435;|&#65356;|&#320;|&#314;|&#318;|&#7735;|&#7737;|&#316;|&#7741;|&#7739;|&#322;|&#410;|&#619;|&#11361;|&#42825;|&#42881;|&#42823;|[\u006C\u24DB\uFF4C\u0140\u013A\u013E\u1E37\u1E39\u013C\u1E3D\u1E3B\u0142\u019A\u026B\u2C61\uA749\uA781\uA747])/g,
+        letters: /(&#108;|&#9435;|&#65356;|&#320;|&#314;|&#318;|&#7735;|&#7737;|&#316;|&#7741;|&#7739;|&#322;|&#410;|&#619;|&#11361;|&#42825;|&#42881;|&#42823;|[\u006C\u24DB\uFF4C\u0140\u013A\u013E\u1E37\u1E39\u013C\u1E3D\u1E3B\u0142\u019A\u026B\u2C61\u2C60\uA748\uA746\uA780])/g,
     },
     {
         base: 'lj',
